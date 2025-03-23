@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Stream Player</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            height: 100vh;
+            background: black;
+            position: relative;
+        }
+        
+        body::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(50,50,50,0.5) 10%, rgba(0,0,0,1) 90%);
+            animation: animateBackground 5s infinite alternate;
+        }
+        
+        @keyframes animateBackground {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: auto;
+            z-index: 3;
+        }
+        
+        .player-container {
+            width: 80%;
+            max-width: 800px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+            position: relative;
+            z-index: 2;
+        }
+        .player-container.zoomed {
+            transform: scale(1.5);
+        }
+        .player-container.full-zoom {
+            transform: scale(2);
+        }
+        video {
+            width: 100%;
+            display: block;
+        }
+        .channel-list {
+            display: flex;
+            gap: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        .channel {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .channel:hover {
+            background: rgba(255, 255, 255, 1);
+        }
+    </style>
+</head>
+<body>
+    <img src="smart-tv-al-logo.png" alt="SMART TV AL Logo" class="logo">
+    
+    <div class="player-container" id="player-container" onclick="toggleZoom()" ondblclick="resetZoom()" onauxclick="tripleClickZoom()">
+        <video id="video" controls></video>
+    </div>
+
+    <div class="channel-list">
+        <div class="channel" onclick="changeChannel('https://fra1.angelthump.com/hls/MjAyNS0wMy0xOVQxNzo1Nzo0MC44ODFabmV2ZWZp_nevefi/index.m3u8')">BigBrother vip 1</div>
+        <div class="channel" onclick="changeChannel('https://fra1.angelthump.com/hls/MjAyNS0wMy0xOVQxODoxOToxOS4xOTZaanlmb3p5bGk=_jyfozyli/index.m3u8')">Big Brother Vip 2</div>
+        <div class="channel" onclick="changeChannel('https://test-streams.mux.dev/nyan/nyan.m3u8')">Channel 3</div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const playerContainer = document.getElementById('player-container');
+        let clickCount = 0;
+
+        function changeChannel(videoSrc) {
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(videoSrc);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                    video.play();
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = videoSrc;
+                video.addEventListener('loadedmetadata', function () {
+                    video.play();
+                });
+            }
+        }
+
+        function toggleZoom() {
+            playerContainer.classList.toggle('zoomed');
+        }
+
+        function tripleClickZoom() {
+            clickCount++;
+            setTimeout(() => {
+                if (clickCount >= 3) {
+                    playerContainer.classList.add('full-zoom');
+                }
+                clickCount = 0;
+            }, 300);
+        }
+
+        function resetZoom() {
+            playerContainer.classList.remove('zoomed');
+            playerContainer.classList.remove('full-zoom');
+        }
+
+        changeChannel('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'); // Load default channel
+    </script>
+</body>
+</html>
